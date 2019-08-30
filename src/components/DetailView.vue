@@ -33,6 +33,17 @@ export default {
           );
         })
       ),
+      fieldsInterfaces: latestInspector$.pipe(
+        switchMap(inspector => {
+          if (inspector === null) {
+            return empty();
+          }
+          return interval(POLL_INTERVAL).pipe(
+            merge(inspector.selected$),
+            switchMap(() => inspector.call("properties.allInterfaces"))
+          );
+        })
+      ),
       setProperty: latestInspector$.method("setProperty")
     };
   }
@@ -60,5 +71,18 @@ export default {
   .dark-mode & {
     color: #35d4c7;
   }
+}
+
+.detailview__interfaces {
+  display: inline-block;
+  color: #009dff;
+  padding-right: 5px;
+  // &:after {
+  //   content: ":";
+  //   color: #000;
+  // }
+  // .dark-mode & {
+  //   color: #35d4c7;
+  // }
 }
 </style>

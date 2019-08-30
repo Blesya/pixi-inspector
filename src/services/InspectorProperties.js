@@ -13,6 +13,40 @@ export const whitelist = [
   "skew",
   "anchor"
 ];
+
+export const needToShow =
+[
+  "_action",
+  "_enabled",
+  "_format",
+  "_height",
+  "_label",
+  "_labelFormat",
+  "_skin",
+  "_state",
+  "_style",
+  "_theme",
+  "_width",
+  "name",
+  "visible",
+  "_x",
+  "_y",
+
+  //label
+  "_realLabel",
+  "_bold",
+  "_color",
+  "_fontName",
+  "_fontSize",
+  "_format",
+  "_hAlign",
+  "_hint",
+  "_italic",
+  "_lowercase",
+  "_uppercase",
+  "_vAlign"
+]
+
 class MismatchConstructor {}
 
 export default class InspectorProperties {
@@ -37,10 +71,9 @@ export default class InspectorProperties {
     }
     const properties = [];
     for (const property in window.$pixi) {
-      if (property[0] === "_" || blacklist.indexOf(property) !== -1) {
-        continue;
+      if (needToShow.indexOf(property) !== -1) {
+        properties.push(...this.serialize(window.$pixi[property], [property], 3));
       }
-      properties.push(...this.serialize(window.$pixi[property], [property], 3));
     }
     properties.sort((a, b) => (a.path > b.path ? 1 : -1));
     return properties;
@@ -48,7 +81,32 @@ export default class InspectorProperties {
   /* eslint-disable */
   set(path, value) {
     eval("$pixi." + path + " = " + JSON.stringify(value));
+
+    if (path === "_width" || path === "_height")
+      $pixi.drawLayout()
+
+    if ($pixi._textHTML)
+      $pixi._textHTML = "";
+    $pixi.invalidateComplexLabel();
+    $pixi.invalidateProperties();
+    $pixi.drawStyles();
+    $pixi.drawProperties();
   }
+
+  allInterfaces() {
+    if (!window.$pixi) {
+      return [];
+    }
+    const properties = [];
+    for (const property in window.$pixi) {
+      if (property[0] === "I") {
+        properties.push(...this.serialize(window.$pixi[property], [property], 3));
+      }
+    }
+    properties.sort((a, b) => (a.path > b.path ? 1 : -1));
+    return properties;
+  }
+
   /* eslint-enable */
 
   serialize(value, path, depth) {
